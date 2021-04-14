@@ -100,7 +100,7 @@ function CRUD(props) {
 
   function HandleNew() {
     console.log("HandleNew");
-    let emptyRec = Fields.reduce(function (acc, curr) {
+    let emptyRec = Fields.reduce(function(acc, curr) {
       acc[curr.fieldName] = "";
       return acc;
     }, {});
@@ -112,34 +112,34 @@ function CRUD(props) {
   function HandleEdit(x) {
     console.log("HandleEdit", x, Data[x]);
     setSelectedX(x);
-    setSelectedRecord({ ...Date[x] });
+    setSelectedRecord(Data[x]);
     setMode("update");
   }
   function HandleChange(e, type) {
     console.log("HandleChange", e, type);
-    let Copy = SelectedRecord;
     if (type === "checkbox") {
-      Copy[e.target.id] = e.target.checked;
+      setSelectedRecord({ ...SelectedRecord, [e.target.id]: e.target.checked });
     } else {
-      Copy[e.target.id] = e.target.value;
+      setSelectedRecord({ ...SelectedRecord, [e.target.id]: e.target.value });
     }
-    setSelectedRecord({ selectedRecord: Copy });
     console.log("SelectedRecord", SelectedRecord);
   }
   function HandleChangeSelect(e, data) {
-    console.log("HandleChangeSelect", e, data);
-    let Copy = SelectedRecord;
-    Copy[data.name] = data.value;
-    setSelectedRecord(Copy);
+    console.log("HandleChangeSelect", data.name, data.value, SelectedRecord);
+    setSelectedRecord({ ...SelectedRecord, [data.name]: data.value });
+    // let Copy = { ...SelectedRecord };
+    // Copy[data.name] = data.value;
+    // setSelectedRecord(Copy);
     console.log("SelectedRecord", SelectedRecord);
   }
   function HandleChangeDateTime(event, { name, value }) {
     console.log("HandleChangeDateTime", name, value);
-    if (SelectedRecord.hasOwnProperty(name)) {
-      let Copy = SelectedRecord;
-      Copy[name] = value;
-      setSelectedRecord(Copy);
-    }
+    setSelectedRecord({ ...SelectedRecord, [name]: value });
+    // if (SelectedRecord.hasOwnProperty(name)) {
+    //   let Copy = { ...SelectedRecord };
+    //   Copy[name] = value;
+    //   setSelectedRecord(Copy);
+    // }
   }
   function HandleSave() {
     console.log("HandleSave");
@@ -160,7 +160,7 @@ function CRUD(props) {
             setData(Copy);
             setSaving(false);
           } else if (Mode === "new") {
-            let Copy = SelectedRecord;
+            let Copy = { ...SelectedRecord };
             Copy[PrimaryKey] = res.data.split(":")[1];
             let Cur = Data;
             Cur.splice(Cur.length, 0, Copy);
@@ -283,7 +283,7 @@ const Show = (props) => {
           <Header title={props.entity} />
           <div className="messages"></div>
         </div>
-        <div id="main" className="col-sm-3 text-right">
+        <div id="main" className="col-sm-3 text-end">
           <Button
             icon
             color="green"
@@ -388,7 +388,7 @@ const TableHeader = (props) => {
                 </th>
               ))
           : null}
-        <th className="text-right">Action</th>
+        <th className="text-end">Action</th>
       </tr>
     </thead>
   );
@@ -402,7 +402,7 @@ const TableData = (props) => {
             ? props.fields
                 .filter((f) => f.fieldName !== props.primaryKey)
                 .map((field, y) => (
-                  <td key={"tablebodyrowfield" + x + "" + y}>
+                  <td key={"tablebodyrowfield" + x + "/" + y}>
                     {field.type === "boolean"
                       ? dat[field.fieldName]
                         ? "true"
@@ -420,7 +420,7 @@ const TableData = (props) => {
                 ))
             : null}
 
-          <td className="text-right">
+          <td className="text-end">
             <div className="item-actions">
               <Button
                 icon
@@ -446,7 +446,7 @@ const Form = (props) => {
           <Header title={TitleHead + props.entity} />
           <div className="messages"></div>
         </div>
-        <div id="main" className="col-sm-3 text-right">
+        <div id="main" className="col-sm-3 text-end">
           {props.mode === "update" ? (
             <Button
               icon
@@ -469,6 +469,7 @@ const Form = (props) => {
                     field.type.split(":")[0] === "ManyToOne"
                       ? props.options[field.type.split(":")[1]]
                       : "";
+                  console.log("Value::", props.record[field.fieldName]);
                   return (
                     <FormItem
                       mode={props.mode}
@@ -476,6 +477,7 @@ const Form = (props) => {
                       option={option}
                       key={"FormItem" + x}
                       record={props.record}
+                      value={props.record[field.fieldName]}
                       HandleChange={props.HandleChange}
                       HandleChangeDateTime={props.HandleChangeDateTime}
                       HandleChangeSelect={props.HandleChangeSelect}
@@ -624,11 +626,12 @@ const FormItem = (props) => {
     </div>
   ) : props.field.type.split(":")[0] == "ManyToOne" ? (
     <div>
+      {console.log("props.record[props.field.fieldName]", props.value)}
       <Select
         name={props.field.fieldName}
         placeholder={props.field.fieldName}
         options={props.option}
-        value={props.record[props.field.fieldName]}
+        value={props.value}
         onChange={props.HandleChangeSelect}
       />
     </div>
